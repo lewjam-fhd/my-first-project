@@ -1,0 +1,27 @@
+[
+  {
+    "comment": "I love being able to upload photos of my grandparents and share them with my cousins! The tagging feature makes it so easy to connect memories to the right ancestors. This has brought our family closer together.",
+    "mood": 5,
+    "recommendationLikelihood": 10
+  },
+  {
+    "comment": "The photo upload process is really slow and sometimes times out. I tried uploading 20 photos from my grandmother's album and it failed halfway through. Had to start over multiple times. Very frustrating.",
+    "mood": 2,
+    "recommendationLikelihood": 4
+  },
+  {
+    "comment": "Good features overall, but I wish there was a way to bulk edit tags on multiple photos at once. Having to tag each person individually on 50+ photos takes forever. Also, the mobile app crashes occasionally.",
+    "mood": 3,
+    "recommendationLikelihood": 6
+  },
+  {
+    "comment": "Found a memory that someone else added of my great-great-grandfather that I'd never seen before! I was able to download it and even add my own story about him. This is exactly what family history should be about.",
+    "mood": 5,
+    "recommendationLikelihood": 9
+  },
+  {
+    "comment": "The interface is a bit confusing at first. It took me a while to figure out how to attach a photo to a specific person in my tree. Once I figured it out it was fine, but better onboarding would help. Also wish I could organize memories into albums.",
+    "mood": 3,
+    "recommendationLikelihood": 5
+  }
+]

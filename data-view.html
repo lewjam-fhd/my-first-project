@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamilySearch Memories - Feedback Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2A5083 0%, #0051C1 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(42, 80, 131, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #2A5083;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .feedback-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .feedback-card:hover {
+            border-color: #0051C1;
+            box-shadow: 0 4px 12px rgba(0, 81, 193, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .feedback-metrics {
+            display: flex;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            min-width: 70px;
+        }
+
+        .metric-label {
+            font-size: 0.75em;
+            color: #6b7280;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2A5083;
+        }
+
+        .mood-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 5px;
+        }
+
+        .mood-star {
+            font-size: 1.1em;
+        }
+
+        .mood-star.filled {
+            color: #fbbf24;
+        }
+
+        .mood-star.empty {
+            color: #d1d5db;
+        }
+
+        .feedback-comment {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 1.05em;
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .sentiment-positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .sentiment-neutral {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .sentiment-negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #2A5083 0%, #0051C1 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .themes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .theme-card {
+            border-left: 4px solid #0051C1;
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .theme-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2A5083;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-count {
+            background: #0051C1;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .theme-description {
+            color: #4b5563;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .recommendation {
+            background: white;
+            border: 2px solid #0051C1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            color: #0051C1;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-text {
+            color: #374151;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #0051C1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .nps-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .nps-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444 0%, #fbbf24 50%, #10b981 100%);
+            transition: width 0.3s;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar h3 {
+            font-size: 1.2em;
+            color: #2A5083;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .filter-section {
+            margin-bottom: 25px;
+        }
+
+        .filter-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-title {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-btn {
+            padding: 10px 15px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #4b5563;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-align: left;
+        }
+
+        .filter-btn:hover {
+            background: #f9fafb;
+            border-color: #0051C1;
+            color: #0051C1;
+        }
+
+        .filter-btn.active {
+            background: #2A5083;
+            color: white;
+            border-color: #2A5083;
+        }
+
+        .results-count {
+            color: #6b7280;
+            font-size: 0.85em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FamilySearch Memories</h1>
+            <p>User Feedback Dashboard</p>
+        </header>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading feedback data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const feedbackData = [
+            {
+                "comment": "I love being able to upload photos of my grandparents and share them with my cousins! The tagging feature makes it so easy to connect memories to the right ancestors. This has brought our family closer together.",
+                "mood": 5,
+                "recommendationLikelihood": 10
+            },
+            {
+                "comment": "The photo upload process is really slow and sometimes times out. I tried uploading 20 photos from my grandmother's album and it failed halfway through. Had to start over multiple times. Very frustrating.",
+                "mood": 2,
+                "recommendationLikelihood": 4
+            },
+            {
+                "comment": "Good features overall, but I wish there was a way to bulk edit tags on multiple photos at once. Having to tag each person individually on 50+ photos takes forever. Also, the mobile app crashes occasionally.",
+                "mood": 3,
+                "recommendationLikelihood": 6
+            },
+            {
+                "comment": "Found a memory that someone else added of my great-great-grandfather that I'd never seen before! I was able to download it and even add my own story about him. This is exactly what family history should be about.",
+                "mood": 5,
+                "recommendationLikelihood": 9
+            },
+            {
+                "comment": "The interface is a bit confusing at first. It took me a while to figure out how to attach a photo to a specific person in my tree. Once I figured it out it was fine, but better onboarding would help. Also wish I could organize memories into albums.",
+                "mood": 3,
+                "recommendationLikelihood": 5
+            }
+        ];
+
+        let currentFilter = 'all';
+        let currentSort = 'none';
+
+        async function loadFeedback() {
+            try {
+                displayDashboard(feedbackData);
+            } catch (error) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function applyFilter(filter) {
+            currentFilter = filter;
+            updateFilterButtons();
+            displayDashboard(feedbackData);
+        }
+
+        function applySort(sort) {
+            currentSort = sort;
+            updateFilterButtons();
+            displayDashboard(feedbackData);
+        }
+
+        function updateFilterButtons() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activeFilterBtn = document.querySelector(`[data-filter="${currentFilter}"]`);
+            const activeSortBtn = document.querySelector(`[data-sort="${currentSort}"]`);
+
+            if (activeFilterBtn) activeFilterBtn.classList.add('active');
+            if (activeSortBtn) activeSortBtn.classList.add('active');
+        }
+
+        function filterAndSortData(data) {
+            let filtered = [...data];
+
+            if (currentFilter === 'positive') {
+                filtered = filtered.filter(item => item.mood >= 4);
+            } else if (currentFilter === 'neutral') {
+                filtered = filtered.filter(item => item.mood === 3);
+            } else if (currentFilter === 'negative') {
+                filtered = filtered.filter(item => item.mood <= 2);
+            } else if (currentFilter === 'promoters') {
+                filtered = filtered.filter(item => item.recommendationLikelihood >= 9);
+            } else if (currentFilter === 'passives') {
+                filtered = filtered.filter(item => item.recommendationLikelihood >= 7 && item.recommendationLikelihood <= 8);
+            } else if (currentFilter === 'detractors') {
+                filtered = filtered.filter(item => item.recommendationLikelihood <= 6);
+            }
+
+            if (currentSort === 'mood-high') {
+                filtered.sort((a, b) => b.mood - a.mood);
+            } else if (currentSort === 'mood-low') {
+                filtered.sort((a, b) => a.mood - b.mood);
+            } else if (currentSort === 'nps-high') {
+                filtered.sort((a, b) => b.recommendationLikelihood - a.recommendationLikelihood);
+            } else if (currentSort === 'nps-low') {
+                filtered.sort((a, b) => a.recommendationLikelihood - b.recommendationLikelihood);
+            }
+
+            return filtered;
+        }
+
+        function displayDashboard(feedbackData) {
+            const filteredData = filterAndSortData(feedbackData);
+
+            const avgMood = (feedbackData.reduce((sum, item) => sum + item.mood, 0) / feedbackData.length).toFixed(1);
+            const avgNPS = (feedbackData.reduce((sum, item) => sum + item.recommendationLikelihood, 0) / feedbackData.length).toFixed(1);
+
+            const themes = analyzeThemes(feedbackData);
+
+            const html = `
+                <div class="main-layout">
+                    <aside class="sidebar">
+                        <h3>Filters</h3>
+
+                        <div class="filter-section">
+                            <div class="filter-title">Sentiment</div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All Feedback</button>
+                                <button class="filter-btn" data-filter="positive" onclick="applyFilter('positive')">Positive (4-5)</button>
+                                <button class="filter-btn" data-filter="neutral" onclick="applyFilter('neutral')">Neutral (3)</button>
+                                <button class="filter-btn" data-filter="negative" onclick="applyFilter('negative')">Negative (1-2)</button>
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <div class="filter-title">NPS Score</div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn" data-filter="promoters" onclick="applyFilter('promoters')">Promoters (9-10)</button>
+                                <button class="filter-btn" data-filter="passives" onclick="applyFilter('passives')">Passives (7-8)</button>
+                                <button class="filter-btn" data-filter="detractors" onclick="applyFilter('detractors')">Detractors (0-6)</button>
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <div class="filter-title">Sort By</div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-sort="none" onclick="applySort('none')">Default Order</button>
+                                <button class="filter-btn" data-sort="mood-high" onclick="applySort('mood-high')">Mood: High to Low</button>
+                                <button class="filter-btn" data-sort="mood-low" onclick="applySort('mood-low')">Mood: Low to High</button>
+                                <button class="filter-btn" data-sort="nps-high" onclick="applySort('nps-high')">NPS: High to Low</button>
+                                <button class="filter-btn" data-sort="nps-low" onclick="applySort('nps-low')">NPS: Low to High</button>
+                            </div>
+                        </div>
+
+                        <div class="results-count">Showing ${filteredData.length} of ${feedbackData.length} items</div>
+                    </aside>
+
+                    <div>
+                        <div class="dashboard">
+                    <div class="section">
+                        <h2 class="section-title">💬 User Feedback</h2>
+                        ${filteredData.length > 0 ? `
+                            <div class="feedback-grid">
+                                ${filteredData.map((item, index) => createFeedbackCard(item, index)).join('')}
+                            </div>
+                        ` : `
+                            <div style="text-align: center; padding: 40px; color: #6b7280;">
+                                <div style="font-size: 3em; margin-bottom: 15px;">🔍</div>
+                                <p>No feedback matches the current filters.</p>
+                                <button class="filter-btn" onclick="applyFilter('all')" style="margin-top: 15px;">Show All Feedback</button>
+                            </div>
+                        `}
+                    </div>
+
+                    <div>
+                        <div class="section" style="margin-bottom: 20px;">
+                            <h2 class="section-title">📊 Overview</h2>
+                            <div class="stats-overview">
+                                <div class="stat-box">
+                                    <div class="stat-value">${avgMood}/5</div>
+                                    <div class="stat-label">Avg Mood</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value">${avgNPS}/10</div>
+                                    <div class="stat-label">Avg NPS</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <h2 class="section-title">🎯 Theme Analysis</h2>
+                            <div class="themes-container">
+                                ${themes.map(theme => createThemeCard(theme)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function createFeedbackCard(item, index) {
+            const sentiment = getSentiment(item.mood);
+            const sentimentClass = sentiment.toLowerCase();
+
+            return `
+                <div class="feedback-card">
+                    <div class="feedback-header">
+                        <div style="flex: 1;">
+                            <div class="feedback-comment">"${item.comment}"</div>
+                            <span class="sentiment-badge sentiment-${sentimentClass}">${sentiment}</span>
+                        </div>
+                        <div class="feedback-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Mood</div>
+                                <div class="metric-value">${item.mood}/5</div>
+                                <div class="mood-indicator">
+                                    ${generateStars(item.mood)}
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">NPS</div>
+                                <div class="metric-value">${item.recommendationLikelihood}</div>
+                                <div class="nps-bar">
+                                    <div class="nps-fill" style="width: ${item.recommendationLikelihood * 10}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateStars(mood) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += `<span class="mood-star ${i <= mood ? 'filled' : 'empty'}">★</span>`;
+            }
+            return stars;
+        }
+
+        function getSentiment(mood) {
+            if (mood >= 4) return 'Positive';
+            if (mood >= 3) return 'Neutral';
+            return 'Negative';
+        }
+
+        function analyzeThemes(feedbackData) {
+            const themes = [];
+
+            const uploadIssues = feedbackData.filter(item =>
+                item.comment.toLowerCase().includes('upload') ||
+                item.comment.toLowerCase().includes('slow') ||
+                item.comment.toLowerCase().includes('timeout')
+            );
+
+            if (uploadIssues.length > 0) {
+                themes.push({
+                    title: 'Photo Upload Performance',
+                    count: uploadIssues.length,
+                    description: 'Users are experiencing slow upload speeds and timeouts when uploading multiple photos, especially when dealing with large batches from family albums.',
+                    recommendation: 'Implement chunked uploads with progress indicators and retry logic. Consider adding batch upload optimization and background processing for large photo sets.',
+                    icon: '📤'
+                });
+            }
+
+            const bulkEditingNeeds = feedbackData.filter(item =>
+                item.comment.toLowerCase().includes('bulk') ||
+                item.comment.toLowerCase().includes('tag') && item.comment.toLowerCase().includes('multiple')
+            );
+
+            if (bulkEditingNeeds.length > 0) {
+                themes.push({
+                    title: 'Bulk Editing & Organization',
+                    count: bulkEditingNeeds.length,
+                    description: 'Users need efficient ways to manage and organize large collections of photos, particularly around tagging multiple people and creating albums.',
+                    recommendation: 'Add bulk tagging interface with multi-select capabilities. Implement album/collection features to help users organize memories thematically (e.g., "Grandma\'s 80th Birthday").',
+                    icon: '🏷️'
+                });
+            }
+
+            const uiConfusion = feedbackData.filter(item =>
+                item.comment.toLowerCase().includes('confusing') ||
+                item.comment.toLowerCase().includes('figure out') ||
+                item.comment.toLowerCase().includes('onboarding')
+            );
+
+            if (uiConfusion.length > 0) {
+                themes.push({
+                    title: 'User Experience & Onboarding',
+                    count: uiConfusion.length,
+                    description: 'New users find the interface unintuitive, particularly around attaching photos to specific individuals in their family tree.',
+                    recommendation: 'Create interactive tutorial for first-time users showing key workflows (upload → tag → attach to tree). Add contextual tooltips and wizard-style guidance for common tasks.',
+                    icon: '🎓'
+                });
+            }
+
+            const positiveDiscovery = feedbackData.filter(item =>
+                (item.comment.toLowerCase().includes('found') ||
+                 item.comment.toLowerCase().includes('discover') ||
+                 item.comment.toLowerCase().includes('love')) &&
+                item.mood >= 4
+            );
+
+            if (positiveDiscovery.length > 0) {
+                themes.push({
+                    title: 'Memory Discovery & Sharing',
+                    count: positiveDiscovery.length,
+                    description: 'Users love discovering memories added by other family members and the ability to share stories across generations.',
+                    recommendation: 'Amplify this strength by adding "recently added by your relatives" notifications, memory suggestions based on family connections, and collaborative storytelling features.',
+                    icon: '✨'
+                });
+            }
+
+            const crashIssues = feedbackData.filter(item =>
+                item.comment.toLowerCase().includes('crash') ||
+                item.comment.toLowerCase().includes('error')
+            );
+
+            if (crashIssues.length > 0) {
+                themes.push({
+                    title: 'Mobile App Stability',
+                    count: crashIssues.length,
+                    description: 'The mobile app experiences occasional crashes that disrupt the user experience.',
+                    recommendation: 'Implement comprehensive error logging and crash analytics. Prioritize stability improvements in the next mobile release cycle, focusing on memory management and offline handling.',
+                    icon: '📱'
+                });
+            }
+
+            return themes.sort((a, b) => b.count - a.count);
+        }
+
+        function createThemeCard(theme) {
+            return `
+                <div class="theme-card">
+                    <div class="theme-title">
+                        <span>${theme.icon}</span>
+                        ${theme.title}
+                        <span class="theme-count">${theme.count} mention${theme.count > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="theme-description">${theme.description}</div>
+                    <div class="recommendation">
+                        <div class="recommendation-title">
+                            💡 Product Recommendation
+                        </div>
+                        <div class="recommendation-text">${theme.recommendation}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        loadFeedback();
+    </script>
+</body>
+</html>

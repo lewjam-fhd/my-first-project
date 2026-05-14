@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First Tool</title>
+    <title>Signal - Feedback to Insights</title>
     <style>
         * {
             margin: 0;
@@ -13,72 +13,576 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: purple;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
         }
 
-        h1 {
+        .card h2 {
             color: #333;
             margin-bottom: 20px;
-            font-size: 2em;
-            text-align: center;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 30px;
-            text-align: center;
-            font-size: 1.1em;
+        .emoji {
+            font-size: 1.2em;
         }
 
-        button {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 20px 50px;
-            font-size: 1.3em;
+            padding: 15px 40px;
+            font-size: 1.2em;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
+            margin-top: 20px;
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
-        button:hover {
+        .analyze-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
-        button:active {
+        .analyze-btn:active {
             transform: translateY(0);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .themes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .theme {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .theme:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .theme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .theme-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        .theme-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .theme-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .theme-opportunity {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .theme-opportunity-title {
+            font-weight: 600;
+            color: #059669;
+            margin-bottom: 5px;
+        }
+
+        .theme-opportunity-text {
+            color: #065f46;
+            font-size: 0.95em;
+        }
+
+        .evidence {
+            background: #f9fafb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .evidence-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .quote {
+            background: white;
+            border-left: 3px solid #667eea;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            font-style: italic;
+            color: #4b5563;
+            font-size: 0.9em;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state .emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+        }
+
+        .load-sample {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #d1d5db;
+            padding: 10px 20px;
+            font-size: 0.95em;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .load-sample:hover {
+            background: #e5e7eb;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: #f9fafb;
+            padding: 12px 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .export-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            transition: background 0.2s;
+        }
+
+        .export-btn:hover {
+            background: #059669;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>My First Tool</h1>
-        <p>This is a simple interactive tool that demonstrates basic HTML, CSS, and JavaScript. Click the button below to see a friendly greeting message!</p>
-        <button onclick="showGreeting()">Click Me</button>
+        <header>
+            <h1>Signal</h1>
+            <p>Turn Slack feedback into actionable product insights</p>
+        </header>
+
+        <div class="main-content">
+            <div class="card">
+                <h2><span class="emoji">📥</span> Paste Feedback</h2>
+                <textarea
+                    id="feedbackInput"
+                    placeholder="Paste Usabilla feedback from your Slack channel here...
+
+Example format:
+User #1234: The search function is really slow
+User #5678: Can't find what I'm looking for, search results are irrelevant
+User #9012: Export to CSV feature is broken again
+User #3456: Would love to see a dark mode option
+User #7890: The search takes forever to load"
+                ></textarea>
+                <button class="load-sample" onclick="loadSampleData()">Load Sample Data</button>
+                <button class="analyze-btn" onclick="analyzeFeedback()">Analyze Feedback</button>
+            </div>
+
+            <div class="card">
+                <h2><span class="emoji">🎯</span> Product Insights</h2>
+                <div id="resultsContainer">
+                    <div class="empty-state">
+                        <div class="emoji">💡</div>
+                        <p>Paste feedback and click "Analyze Feedback" to see prioritized themes and product opportunities</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        function showGreeting() {
-            alert('Hello from Claude Code!');
+        const sampleFeedback = `User #1234: The search function is really slow, takes like 10 seconds to show results
+User #5678: Can't find what I'm looking for, search results are totally irrelevant to my query
+User #9012: Export to CSV feature is broken again, getting error messages
+User #3456: Would love to see a dark mode option for night work
+User #7890: The search takes forever to load, is this normal?
+User #2345: Search doesn't understand synonyms at all, have to use exact keywords
+User #6789: +1 on dark mode, my eyes hurt working late
+User #4567: CSV export times out on large datasets
+User #8901: Search bar UI is confusing, not sure what filters do
+User #1111: Dark mode please! Every other tool has it now
+User #2222: Export function crashes when selecting all columns
+User #3333: Search is super slow especially for older data
+User #4444: Would pay extra for better search honestly
+User #5555: Need bulk export options, CSV isn't cutting it`;
+
+        function loadSampleData() {
+            document.getElementById('feedbackInput').value = sampleFeedback;
+        }
+
+        function analyzeFeedback() {
+            const input = document.getElementById('feedbackInput').value.trim();
+
+            if (!input) {
+                alert('Please paste some feedback first!');
+                return;
+            }
+
+            const feedback = input.split('\n').filter(line => line.trim());
+            const themes = clusterFeedback(feedback);
+            displayResults(themes, feedback.length);
+        }
+
+        function clusterFeedback(feedback) {
+            const keywords = {
+                search: ['search', 'find', 'query', 'results', 'slow', 'filter'],
+                export: ['export', 'csv', 'download', 'bulk', 'error', 'crash', 'timeout'],
+                darkMode: ['dark mode', 'dark theme', 'night', 'eyes hurt', 'theme'],
+                performance: ['slow', 'forever', 'takes', 'load', 'performance', 'timeout']
+            };
+
+            const clusters = {
+                search: { items: [], quotes: [] },
+                export: { items: [], quotes: [] },
+                darkMode: { items: [], quotes: [] },
+                other: { items: [], quotes: [] }
+            };
+
+            feedback.forEach(line => {
+                const lowerLine = line.toLowerCase();
+                let categorized = false;
+
+                if (keywords.search.some(kw => lowerLine.includes(kw)) &&
+                    !lowerLine.includes('export')) {
+                    clusters.search.items.push(line);
+                    const quote = line.split(':')[1]?.trim();
+                    if (quote) clusters.search.quotes.push(quote);
+                    categorized = true;
+                }
+
+                if (keywords.export.some(kw => lowerLine.includes(kw))) {
+                    clusters.export.items.push(line);
+                    const quote = line.split(':')[1]?.trim();
+                    if (quote) clusters.export.quotes.push(quote);
+                    categorized = true;
+                }
+
+                if (keywords.darkMode.some(kw => lowerLine.includes(kw))) {
+                    clusters.darkMode.items.push(line);
+                    const quote = line.split(':')[1]?.trim();
+                    if (quote) clusters.darkMode.quotes.push(quote);
+                    categorized = true;
+                }
+
+                if (!categorized) {
+                    clusters.other.items.push(line);
+                }
+            });
+
+            const themes = [];
+
+            if (clusters.search.items.length > 0) {
+                themes.push({
+                    title: 'Search Performance & Relevance',
+                    count: clusters.search.items.length,
+                    priority: 'high',
+                    description: 'Users report slow search speeds and irrelevant results. Multiple complaints about load times and difficulty finding content.',
+                    opportunity: 'Rebuild search with modern indexing (Elasticsearch/Algolia) and implement semantic search for better relevance',
+                    quotes: clusters.search.quotes.slice(0, 3)
+                });
+            }
+
+            if (clusters.export.items.length > 0) {
+                themes.push({
+                    title: 'Export Reliability Issues',
+                    count: clusters.export.items.length,
+                    priority: 'medium',
+                    description: 'CSV export functionality is unreliable with errors on large datasets and missing bulk export options.',
+                    opportunity: 'Implement async export system with email delivery for large datasets, add format options (Excel, JSON)',
+                    quotes: clusters.export.quotes.slice(0, 3)
+                });
+            }
+
+            if (clusters.darkMode.items.length > 0) {
+                themes.push({
+                    title: 'Dark Mode Request',
+                    count: clusters.darkMode.items.length,
+                    priority: 'low',
+                    description: 'Multiple users requesting dark mode for better accessibility and reduced eye strain during extended use.',
+                    opportunity: 'Add system-aware theme switcher with user preference persistence',
+                    quotes: clusters.darkMode.quotes.slice(0, 3)
+                });
+            }
+
+            return themes.sort((a, b) => b.count - a.count);
+        }
+
+        function displayResults(themes, totalFeedback) {
+            const container = document.getElementById('resultsContainer');
+
+            if (themes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🤔</div>
+                        <p>No clear themes detected. Try adding more feedback.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const priorityColors = {
+                high: '#ef4444',
+                medium: '#f59e0b',
+                low: '#10b981'
+            };
+
+            let html = `
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">${totalFeedback}</div>
+                        <div class="stat-label">Feedback Items</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${themes.length}</div>
+                        <div class="stat-label">Themes Found</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${themes[0].count}</div>
+                        <div class="stat-label">Top Theme</div>
+                    </div>
+                </div>
+                <div class="themes-container">
+            `;
+
+            themes.forEach((theme, index) => {
+                html += `
+                    <div class="theme">
+                        <div class="theme-header">
+                            <div class="theme-title">${index + 1}. ${theme.title}</div>
+                            <div class="theme-badge" style="background: ${priorityColors[theme.priority]}">
+                                ${theme.count} mentions
+                            </div>
+                        </div>
+                        <div class="theme-description">${theme.description}</div>
+                        <div class="theme-opportunity">
+                            <div class="theme-opportunity-title">💡 Product Opportunity</div>
+                            <div class="theme-opportunity-text">${theme.opportunity}</div>
+                        </div>
+                        <div class="evidence">
+                            <div class="evidence-title">Evidence (sample quotes):</div>
+                            ${theme.quotes.map(q => `<div class="quote">"${q}"</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+                <div class="export-section">
+                    <button class="export-btn" onclick="exportToPRD()">📄 Export to PRD</button>
+                    <button class="export-btn" onclick="exportToJira()">📋 Export to Jira</button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function exportToPRD() {
+            const themes = extractThemesFromDOM();
+            let prd = `# Product Requirements Document\n\n`;
+            prd += `**Generated:** ${new Date().toLocaleDateString()}\n\n`;
+            prd += `## Summary\nThis PRD outlines product opportunities identified from user feedback analysis.\n\n`;
+
+            themes.forEach((theme, i) => {
+                prd += `## ${i + 1}. ${theme.title}\n\n`;
+                prd += `**Priority:** ${theme.priority.toUpperCase()}\n\n`;
+                prd += `**Problem:** ${theme.description}\n\n`;
+                prd += `**Proposed Solution:** ${theme.opportunity}\n\n`;
+                prd += `**Evidence:**\n`;
+                theme.quotes.forEach(q => prd += `- "${q}"\n`);
+                prd += `\n`;
+            });
+
+            downloadFile('signal-prd.md', prd);
+        }
+
+        function exportToJira() {
+            const themes = extractThemesFromDOM();
+            let jira = `JIRA EPIC EXPORTS\n${'='.repeat(50)}\n\n`;
+
+            themes.forEach((theme, i) => {
+                jira += `EPIC ${i + 1}: ${theme.title}\n`;
+                jira += `Priority: ${theme.priority.toUpperCase()}\n`;
+                jira += `Mentions: ${theme.count}\n\n`;
+                jira += `Description:\n${theme.description}\n\n`;
+                jira += `Acceptance Criteria:\n${theme.opportunity}\n\n`;
+                jira += `User Quotes:\n`;
+                theme.quotes.forEach(q => jira += `- "${q}"\n`);
+                jira += `\n${'-'.repeat(50)}\n\n`;
+            });
+
+            downloadFile('signal-jira-epics.txt', jira);
+        }
+
+        function extractThemesFromDOM() {
+            const themes = [];
+            document.querySelectorAll('.theme').forEach(el => {
+                const title = el.querySelector('.theme-title').textContent.replace(/^\d+\.\s*/, '');
+                const count = parseInt(el.querySelector('.theme-badge').textContent);
+                const description = el.querySelector('.theme-description').textContent;
+                const opportunity = el.querySelector('.theme-opportunity-text').textContent;
+                const quotes = Array.from(el.querySelectorAll('.quote')).map(q =>
+                    q.textContent.replace(/^"|"$/g, '')
+                );
+                const priority = el.querySelector('.theme-badge').style.background.includes('239, 68, 68') ? 'high' :
+                                el.querySelector('.theme-badge').style.background.includes('245, 158, 11') ? 'medium' : 'low';
+
+                themes.push({ title, count, priority, description, opportunity, quotes });
+            });
+            return themes;
+        }
+
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         }
     </script>
 </body>
