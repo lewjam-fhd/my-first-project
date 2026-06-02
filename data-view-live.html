@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamilySearch Memories - Live Slack Feedback</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2A5083 0%, #0051C1 100%);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(42, 80, 131, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px 15px;
+                margin-bottom: 15px;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            header p {
+                font-size: 1em;
+            }
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                gap: 15px;
+            }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                padding: 20px 15px;
+                border-radius: 8px;
+            }
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #2A5083;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.2em;
+                margin-bottom: 15px;
+            }
+        }
+
+        .feedback-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .feedback-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-card {
+                padding: 15px;
+                border-radius: 8px;
+            }
+        }
+
+        .feedback-card:hover {
+            border-color: #0051C1;
+            box-shadow: 0 4px 12px rgba(0, 81, 193, 0.1);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .feedback-card:hover {
+                transform: none;
+            }
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-header {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        .feedback-metrics {
+            display: flex;
+            gap: 15px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-metrics {
+                width: 100%;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .feedback-metrics {
+                gap: 8px;
+            }
+        }
+
+        .metric {
+            text-align: center;
+            padding: 8px 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+            min-width: 70px;
+        }
+
+        @media (max-width: 768px) {
+            .metric {
+                flex: 1;
+                min-width: 0;
+                padding: 8px 10px;
+            }
+        }
+
+        .metric-label {
+            font-size: 0.75em;
+            color: #6b7280;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2A5083;
+        }
+
+        .mood-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 5px;
+        }
+
+        .mood-star {
+            font-size: 1.1em;
+        }
+
+        .mood-star.filled {
+            color: #fbbf24;
+        }
+
+        .mood-star.empty {
+            color: #d1d5db;
+        }
+
+        .feedback-comment {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 1.05em;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-comment {
+                font-size: 0.95em;
+                line-height: 1.6;
+            }
+        }
+
+        .feedback-meta {
+            font-size: 0.85em;
+            color: #9ca3af;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            word-break: break-all;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            max-width: 100%;
+        }
+
+        .meta-item a {
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        .sentiment-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .sentiment-positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .sentiment-neutral {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .sentiment-negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-overview {
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #2A5083 0%, #0051C1 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .stat-box {
+                padding: 15px 10px;
+                border-radius: 8px;
+            }
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 1.8em;
+            }
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .stat-label {
+                font-size: 0.8em;
+            }
+        }
+
+        .themes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .theme-card {
+            border-left: 4px solid #0051C1;
+            background: #f0f7ff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .theme-card {
+                padding: 15px;
+            }
+        }
+
+        .theme-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2A5083;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .theme-title {
+                font-size: 1.05em;
+            }
+        }
+
+        .theme-count {
+            background: #0051C1;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .theme-count {
+                font-size: 0.75em;
+                padding: 3px 8px;
+            }
+        }
+
+        .theme-description {
+            color: #4b5563;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .theme-description {
+                font-size: 0.9em;
+                line-height: 1.5;
+            }
+        }
+
+        .recommendation {
+            background: white;
+            border: 2px solid #0051C1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .recommendation {
+                padding: 12px;
+            }
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            color: #0051C1;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-text {
+            color: #374151;
+            font-size: 0.95em;
+            line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .recommendation-text {
+                font-size: 0.88em;
+                line-height: 1.5;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #0051C1;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .nps-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .nps-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444 0%, #fbbf24 50%, #10b981 100%);
+            transition: width 0.3s;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                padding: 15px;
+                border-radius: 8px;
+            }
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-header {
+                margin-bottom: 15px;
+            }
+        }
+
+        .sidebar h3 {
+            font-size: 1.2em;
+            color: #2A5083;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar h3 {
+                font-size: 1.1em;
+            }
+        }
+
+        .toggle-filters {
+            background: none;
+            border: none;
+            color: #2A5083;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.2em;
+            line-height: 1;
+            transition: transform 0.3s;
+        }
+
+        .toggle-filters:hover {
+            color: #0051C1;
+        }
+
+        .toggle-filters.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .filters-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .filters-content.collapsed {
+            max-height: 0;
+        }
+
+        .filter-section {
+            margin-bottom: 25px;
+        }
+
+        .filter-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-title {
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-btn {
+            padding: 10px 15px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #4b5563;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-family: inherit;
+            text-align: left;
+        }
+
+        .filter-btn:hover {
+            background: #f9fafb;
+            border-color: #0051C1;
+            color: #0051C1;
+        }
+
+        .filter-btn.active {
+            background: #2A5083;
+            color: white;
+            border-color: #2A5083;
+        }
+
+        .results-count {
+            color: #6b7280;
+            font-size: 0.85em;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span class="live-indicator"></span>
+                FamilySearch Memories - Live Feedback
+            </h1>
+            <p>Real-time Usabilla data from Slack Channel</p>
+        </header>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading feedback data from Slack...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let feedbackData = [];
+        let currentFilter = 'all';
+        let currentSort = 'none';
+        let filtersExpanded = true;
+
+        async function loadFeedback() {
+            try {
+                const response = await fetch('slack-feedback-data.json');
+                if (!response.ok) throw new Error('Failed to load feedback data');
+
+                feedbackData = await response.json();
+                displayDashboard(feedbackData);
+                initializeFilters();
+            } catch (error) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                        <p style="margin-top: 10px;">Make sure slack-feedback-data.json is in the same directory.</p>
+                    </div>
+                `;
+            }
+        }
+
+        /* OLD EMBEDDED DATA VERSION:
+        async function loadFeedback() {
+            try {
+                // Embedded data - no fetch needed
+                feedbackData = [
+  {
+    "comment": "Angeline \"Angie\" Brewer Hatton is my great, great grandmother.  Married my great, great grandfather John \"Johnnie\" Hatton, in 1849, in Breathitt County, Kentucky.  I have her DOB as 07/01/1835, and DOD as 1901.  Both are buried in the family cemetery, on what was their farm, in Hollonville, Wolfe County, Kentucky.",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "wandarowe137@yahoo.com",
+    "url": "https://www.familysearch.org/en/memories/memory/240438796",
+    "platform": "Windows 10",
+    "browser": "Microsoft Edge 148.0.0.0",
+    "timestamp": "1780421405.926719",
+    "date": "2026-06-02T17:30:05.926Z"
+  },
+  {
+    "comment": "13 AGE    BOY     HISTORY FAN !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!?????????????????????????????????????????????????????????????????????????????????????????????????????????????!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!??????????????????????????????????????????????????????!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!???????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "jwfechter@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/memory/177846886",
+    "platform": "Windows 10",
+    "browser": "Microsoft Edge 148.0.0.0",
+    "timestamp": "1780279747.540909",
+    "date": "2026-06-01T02:09:07.540Z"
+  },
+  {
+    "comment": "1. The feedback tab covers up information, that can only be fully viewed by using a finger to move the page.  And then when we/I want to select it, we/I have to be a contortionist with our fingers to select the item.  The feedback tab needs to be relocated, to prevent the issue.\n2. The messaging window to type a message, stays at the bottom of the page, which gets covered up by other items like the keyboard on a mobile device.  When we/I attempt to view the message window it is impossible to do so.  I/we want to be able to view what has been typed, so there are no mistakes but your software places the window where it can’t be viewed.  This window that we/I are/am using now, has items below it, so the window is still visible but in the viewing of a certain source, the are no items below the window.  So it stays at the bottom; which is covered by the keyboard when typing.  If I/we deselect the keyboard, the window is visible but when I/we want to scroll in the window to check for mistakes, the keyboard reappears and covers the message window again.  VERY frustrating to get a message out to someone and makes the interaction disappointing enough, to not want to use your website anymore.",
+    "mood": 2,
+    "recommendationLikelihood": 2,
+    "email": "red62comet@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/memory/176328640",
+    "platform": "IOS 18",
+    "browser": "DuckDuckGo Privacy Browser 26.5.0.0",
+    "timestamp": "1780257512.878979",
+    "date": "2026-05-31T19:58:32.878Z"
+  },
+  {
+    "comment": "Came up in an asian language no where I can see to change it",
+    "mood": 1,
+    "recommendationLikelihood": 6,
+    "email": "",
+    "url": "https://www.familysearch.org/zh-Hant/memories/memory/31282780",
+    "platform": "Android 10",
+    "browser": "Chrome Mobile 148.0.0.0",
+    "timestamp": "1780246397.340529",
+    "date": "2026-05-31T16:53:17.340Z"
+  },
+  {
+    "comment": "Can’t read the text with these pop ups in the way.",
+    "mood": 1,
+    "recommendationLikelihood": 3,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/154596785",
+    "platform": "IOS 26",
+    "browser": "Chrome Mobile iOS 148.0.7778.166",
+    "timestamp": "1780183050.900879",
+    "date": "2026-05-30T23:17:30.900Z"
+  },
+  {
+    "comment": "I am working with my brother-in-law in adding photos to his memories gallery.  When he has tried to add .jpg files to his gallery, it says one or more file types are not accepted.  However, he has previously successfully added similar files from the same batch.  What is going on?",
+    "mood": 2,
+    "recommendationLikelihood": 10,
+    "email": "stewardcraig3@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/gallery/",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1780180025.156499",
+    "date": "2026-05-30T22:27:05.156Z"
+  },
+  {
+    "comment": "Bellas",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/es/memories/memory/196816820",
+    "platform": "Android 10",
+    "browser": "Samsung Browser 30.0.0.0",
+    "timestamp": "1780149811.998479",
+    "date": "2026-05-30T14:03:31.998Z"
+  },
+  {
+    "comment": "Fallecio",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/es/tree/person/memories/LHW4-34H",
+    "platform": "IOS 26",
+    "browser": "Chrome Mobile iOS 148.0.7778.166",
+    "timestamp": "1780021411.155819",
+    "date": "2026-05-29T02:23:31.155Z"
+  },
+  {
+    "comment": "Last week I had scanned pictures for a friend and they were accepted into Memories.  Today, she came into the library again and the pictures were not allowed into Memories.  I just tried the ones we added last week and they worked, but today they won't go into my FamilySearch either.  Is there a problem adding .JPEG files and just need to wait?",
+    "mood": 2,
+    "recommendationLikelihood": 10,
+    "email": "prettyman_doris@hotmail.com",
+    "url": "https://www.familysearch.org/en/memories/gallery/",
+    "platform": "Mac 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1780012849.253909",
+    "date": "2026-05-29T00:00:49.253Z"
+  },
+  {
+    "comment": "I am unable to Tag all people to this Memory document. I copy the profile number, paste it into the Tag search box, and the person isn't recognised so I only get Add with no link to the profile. This is an inconsistent problem, though. I have been able to tag in others on this record as you can see - the wife (Hendrina) and one of the children (Gertrude). However, the PID for Heinrich for example, G9YQ-575, wasn't recognised, as others weren't as well, a couple of the other daughters.\n\nAlso, since this is a PDF instead of an image, I can't link directly to the part of the document where they are named. This would be a useful feature to add.",
+    "mood": 3,
+    "recommendationLikelihood": 9,
+    "email": "jwhit@melbpc.org.au",
+    "url": "https://www.familysearch.org/en/tree/person/memories/LRFK-63T",
+    "platform": "Windows 10",
+    "browser": "Chrome 146.0.0.0",
+    "timestamp": "1780010915.917689",
+    "date": "2026-05-28T23:28:35.917Z"
+  },
+  {
+    "comment": "this is part of my family too :hearts: uncle Antonio, Aunt Luisa, Mery...",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "nanjusan@yahoo.com",
+    "url": "https://www.familysearch.org/es/memories/memory/74754781",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1779995489.725649",
+    "date": "2026-05-28T19:11:29.725Z"
+  },
+  {
+    "comment": "The shamrock.",
+    "mood": 4,
+    "recommendationLikelihood": 8,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/17271297",
+    "platform": "IOS 18",
+    "browser": "Mobile Safari 26.4.0.0",
+    "timestamp": "1779994859.652169",
+    "date": "2026-05-28T19:00:59.652Z"
+  },
+  {
+    "comment": "When a memory is uploaded directly to a person's memory page the person tag is not complete. If you then want to delete the tag you must first \"improve\" the tag. This requires extra clicks before you can delete the tag. It would be nice to have a \"delete tag\" option on the edit tag (gear icon) menu which would allow a direct delete of the partial tag.\n\nBTW I just helped a public guest through the process of deleting over 160 partial tags on a single person's page. It took a lot of clicks. (Open memory, click gear, click improve tag, click the green checkmark, click delete, click confirm delete, click the back arrow to go back to the person's memories).\n\nAnother option would be to allow us to select multiple memories on a person's memory page and remove the tag from all checked memories.\n\nHaving said all of that I can understand why it might be best to keep it a one memory at a time process.\n\nDo what you feel is best.\n\nElder Kevin Augustus Long, Support Center service missionary. \n\nThanks for all you all do!",
+    "mood": 4,
+    "recommendationLikelihood": 10,
+    "email": "kalong71@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/gallery/my-archive",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1779905088.311359",
+    "date": "2026-05-27T18:04:48.311Z"
+  },
+  {
+    "comment": "The original page I started on was jumping all over the place as I have been typing!",
+    "mood": 2,
+    "recommendationLikelihood": 10,
+    "email": "dianne6545@gmail.com",
+    "url": "https://www.familysearch.org/en/tree/person/memories/9737-X7L",
+    "platform": "Windows 10",
+    "browser": "Avast Secure Browser 147.0.0.0",
+    "timestamp": "1779761206.737489",
+    "date": "2026-05-26T02:06:46.737Z"
+  },
+  {
+    "comment": "LOVE!",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/tree/person/memories/MWBL-D2K",
+    "platform": "IOS 26",
+    "browser": "Google Search App 420.4.909430193.0",
+    "timestamp": "1779641691.073779",
+    "date": "2026-05-24T16:54:51.073Z"
+  },
+  {
+    "comment": "The page offered to let me create an album, but when I clicked \"create an album\" the whole page went dark and froze.  I have to shut down the page to do anything.",
+    "mood": 2,
+    "recommendationLikelihood": 1,
+    "email": "",
+    "url": "https://www.familysearch.org/en/tree/person/memories/KWCZ-8TP",
+    "platform": "Windows 10",
+    "browser": "Chrome 147.0.0.0",
+    "timestamp": "1779597205.516149",
+    "date": "2026-05-24T04:33:25.516Z"
+  },
+  {
+    "comment": "Gallery not showing any uploads fropm the past.  Had a guest call earl;ier saying he could not get Gallery to work and he states he has over 1000 entries",
+    "mood": 2,
+    "recommendationLikelihood": 10,
+    "email": "RodneyLBrock@ChurchofJesusChrist.org",
+    "url": "https://www.familysearch.org/en/memories/gallery/bookmarks",
+    "platform": "Mac 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1779563228.144949",
+    "date": "2026-05-23T19:07:08.144Z"
+  },
+  {
+    "comment": "Please bring back the quality of the former format of Memories for FamilySearch while using a computer.  This new format is so disappointing, as 1) there is nowhere to add additional information for the document of photo; 2) the title is also the information listed above the title, so small it's hard to read, AND, what purpose does a duplicate comment provide? 3) getting the sort by years to work is confusing as it isn't consistent when going from one person to another person.  AND, as I am trying to be nice as possible, this is not what I expect from FS.  I have been told by the Help # that these changes were to facilitate cell phones.  If so, why break it for those that use a computer, laptop or tablet?? Please communicate as this is simply frustrating.  I will always use and recommend FS, however this is not a good change.",
+    "mood": 1,
+    "recommendationLikelihood": 9,
+    "email": "gloriaudy@gmail.com",
+    "url": "https://www.familysearch.org/en/tree/person/memories/LZVH-W48",
+    "platform": "Chrome OS 14541",
+    "browser": "Chrome 147.0.0.0",
+    "timestamp": "1779477942.441519",
+    "date": "2026-05-22T19:25:42.441Z"
+  },
+  {
+    "comment": "My name is Klarise not Klarice",
+    "mood": 4,
+    "recommendationLikelihood": 8,
+    "email": "klarisez@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/memory/195046214",
+    "platform": "Android 10",
+    "browser": "Chrome Mobile 148.0.0.0",
+    "timestamp": "1779450395.294359",
+    "date": "2026-05-22T11:46:35.294Z"
+  },
+  {
+    "comment": "Fraterno das  Chagas Valença",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/24666923",
+    "platform": "Android 10",
+    "browser": "Chrome Mobile 148.0.0.0",
+    "timestamp": "1779404727.537729",
+    "date": "2026-05-21T23:05:27.537Z"
+  },
+  {
+    "comment": "Rearranging memories using Edit and Sort Custom in Albums is no longer working. Tried both Safari and Firefox on macOS Tahoe 26.5 with no success.",
+    "mood": 3,
+    "recommendationLikelihood": 8,
+    "email": "sloan.d@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/gallery/album/790706",
+    "platform": "Mac 10",
+    "browser": "Firefox 150.0.0.0",
+    "timestamp": "1779363894.198989",
+    "date": "2026-05-21T11:44:54.198Z"
+  },
+  {
+    "comment": "I have the same Family last Name.. this being my 1st search on more information on this rare Spanish Ancestral Name.. it's from my Father's RIP side of the family.. He also has Native American ancestry with DNA test results showing between 46.5 to 47 percent indigenous, Kickapoo Tribe of Southern Texas",
+    "mood": 4,
+    "recommendationLikelihood": 9,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/116169102",
+    "platform": "Android 10",
+    "browser": "Chrome Mobile 148.0.0.0",
+    "timestamp": "1779350606.947059",
+    "date": "2026-05-21T08:03:26.947Z"
+  },
+  {
+    "comment": "Very well done!  I enjoyed reading it!",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/240829081",
+    "platform": "Mac 10",
+    "browser": "Safari 26.3.0.0",
+    "timestamp": "1779243183.665679",
+    "date": "2026-05-20T02:13:03.665Z"
+  },
+  {
+    "comment": "locked out when trying to create and ab album",
+    "mood": 2,
+    "recommendationLikelihood": 7,
+    "email": "",
+    "url": "https://www.familysearch.org/en/tree/person/memories/PDRC-WQQ",
+    "platform": "Windows 10",
+    "browser": "Microsoft Edge 148.0.0.0",
+    "timestamp": "1779215531.200159",
+    "date": "2026-05-19T18:32:11.200Z"
+  },
+  {
+    "comment": "It is too difficult to add a title!",
+    "mood": 2,
+    "recommendationLikelihood": 4,
+    "email": "",
+    "url": "https://www.familysearch.org/en/tree/person/memories/945F-ZSB",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1779213593.675619",
+    "date": "2026-05-19T17:59:53.675Z"
+  },
+  {
+    "comment": "love fs",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "daisymenifee@gmail.com",
+    "url": "https://www.familysearch.org/en/tree/person/memories/GKK9-7CM",
+    "platform": "Chrome OS 14541",
+    "browser": "Chrome 147.0.0.0",
+    "timestamp": "1779210779.427949",
+    "date": "2026-05-19T17:12:59.427Z"
+  },
+  {
+    "comment": "easy",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/gallery",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1779156965.856379",
+    "date": "2026-05-19T02:16:05.856Z"
+  },
+  {
+    "comment": "It is a blank page",
+    "mood": 2,
+    "recommendationLikelihood": 6,
+    "email": "chemin707@aol.com",
+    "url": "https://www.familysearch.org/en/memories/memory/239687035",
+    "platform": "Mac 10",
+    "browser": "Safari 26.4.0.0",
+    "timestamp": "1779149583.837969",
+    "date": "2026-05-19T00:13:03.837Z"
+  },
+  {
+    "comment": "In reference to a photograph of a temple apron worn in the Nauvoo temple by my ancestor with the last name of Simmons Philander Curtis (KWV7-W69), is this image appropriate for general distribution? Is it on display 'inside' the temple for obvious sacred ramifications?",
+    "mood": 2,
+    "recommendationLikelihood": 10,
+    "email": "jillmariegoodrich@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/memory/240895528",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1779123356.430889",
+    "date": "2026-05-18T16:55:56.430Z"
+  },
+  {
+    "comment": "It’s informative, and shows a lot of insight on how theses people lived there lives!",
+    "mood": 4,
+    "recommendationLikelihood": 9,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/gallery/album/1585274",
+    "platform": "IOS 18",
+    "browser": "Mobile Safari 0.0.0.0",
+    "timestamp": "1779052694.833169",
+    "date": "2026-05-17T21:18:14.833Z"
+  },
+  {
+    "comment": "This website is amazing!!!",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "bleidam4@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/gallery/",
+    "platform": "Chrome OS 14541",
+    "browser": "Chrome 147.0.0.0",
+    "timestamp": "1779052221.447689",
+    "date": "2026-05-17T21:10:21.447Z"
+  },
+  {
+    "comment": "The sign doesn't really say much about who Jacob G. Bigler was...a great church and civic leader!",
+    "mood": 4,
+    "recommendationLikelihood": 7,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/241708546",
+    "platform": "Windows 10",
+    "browser": "Firefox 150.0.0.0",
+    "timestamp": "1779051055.921429",
+    "date": "2026-05-17T20:50:55.921Z"
+  },
+  {
+    "comment": "Amazing",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/215472458",
+    "platform": "IOS 18",
+    "browser": "Mobile Safari 26.4.0.0",
+    "timestamp": "1779037571.794959",
+    "date": "2026-05-17T17:06:11.794Z"
+  },
+  {
+    "comment": "My famiy",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/208559358",
+    "platform": "Mac 10",
+    "browser": "unknown",
+    "timestamp": "1779032328.367699",
+    "date": "2026-05-17T15:38:48.367Z"
+  },
+  {
+    "comment": "My family",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/208559358",
+    "platform": "Mac 10",
+    "browser": "unknown",
+    "timestamp": "1779032042.027509",
+    "date": "2026-05-17T15:34:02.027Z"
+  },
+  {
+    "comment": "Junk being added",
+    "mood": 1,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/239891878",
+    "platform": "IOS 18",
+    "browser": "Mobile Safari 0.0.0.0",
+    "timestamp": "1778998841.972059",
+    "date": "2026-05-17T06:20:41.972Z"
+  },
+  {
+    "comment": "All five episodes about Grandpa Millet are excellent. Appreciate Jay for doing them.",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/240154738",
+    "platform": "Windows 10",
+    "browser": "Firefox 150.0.0.0",
+    "timestamp": "1778984255.869939",
+    "date": "2026-05-17T02:17:35.869Z"
+  },
+  {
+    "comment": "I would like to have an indicator I can check to show that this is an AI enhanced photo.  It would be nice if there could be some type of obvious banner on AI photos.  You could either rely on the user to indicate that in the photo details or maybe use the metadata to determines AI photos.",
+    "mood": 3,
+    "recommendationLikelihood": 10,
+    "email": "bwatlington@verizon.net",
+    "url": "https://www.familysearch.org/en/tree/person/memories/G9GL-DQR",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1778970147.080339",
+    "date": "2026-05-16T22:22:27.080Z"
+  },
+  {
+    "comment": "Maravilhoso!!! Só agradeço!!!",
+    "mood": 4,
+    "recommendationLikelihood": 10,
+    "email": "mayrla.hamburg@gmail.com",
+    "url": "https://www.familysearch.org/pt/memories/gallery",
+    "platform": "Android 10",
+    "browser": "Chrome Mobile 148.0.0.0",
+    "timestamp": "1778920010.560809",
+    "date": "2026-05-16T08:26:50.560Z"
+  },
+  {
+    "comment": "_This text is too long to display here. View the full text inside the Getfeedback Platform_.\nMy guy was there James Dayley married to Mcbrides daughter issabella Mcbride now dayley.ut was James Amos Mcbride that burried 17boidies in well with cement ,hogs acommin, they were shortly then arrested 3days of use your imagination boys and James did not break or deny he was silent,he saw what they done to his people he knew his wife was raped and all other women WHy ain't that talked about,if James ever went back or eye for an eye or killed men who raped women was he wrong,he rode with Orin good dude I just know James dsyley was a man of God who did not deny church or Joe or Hyrum cause they were boys dayley was a guy who could hack it take family's murdered women raped unspeakable torture kids die houses stolen horses guns again again Nauvoo Iowa was his kids his wife's feet that'd bloodied the Feb snow,he didn't go till 52 I belive don't say why but I know he was a man men feared because he was calm riotous priesthood worthy unlike most then and now he could build lead care for run a mill protect a mill I'm sure him and that Isreal neuro did more than most building winter quarters or getting shit done the diaper dad at 3am 609miles away threw Indian land,and I cut tip of my finger off thought I was gonna died I'm 6five 250lbs beast of a dsyley I knew man how did he not break the torture the fowle talk about his wife ,best thing for James to do to make Satan suck it be quiet take  so proud\n Of James Dayley and issebella Mcbride there 1834 baptized Feb hole in the ice,Ole Dayley may have joined cause izzyB was smoking hot :fire: only if I'm baptized lds hw was all ready cutting that pond a hole 1834boys,say he was body guard for Ole Joe with Orin yeah yeah to me back then u get 7 to 5 bad ass not scared men priesthood too backwoods around town your good,so proud James had there back,I wonder why he ain't talked about more under the radar boys, way we like it and Danites",
+    "mood": 2,
+    "recommendationLikelihood": 10,
+    "email": "jareddayley133@gmail.com",
+    "url": "https://www.familysearch.org/en/memories/memory/178954295",
+    "platform": "Android 10",
+    "browser": "Chrome Mobile 148.0.0.0",
+    "timestamp": "1778896017.633309",
+    "date": "2026-05-16T01:46:57.633Z"
+  },
+  {
+    "comment": "Very nice.  Great information about my Grandmother Margaret’s family.  Thank you.",
+    "mood": 5,
+    "recommendationLikelihood": 10,
+    "email": "",
+    "url": "https://www.familysearch.org/en/memories/memory/240424047",
+    "platform": "Mac 10",
+    "browser": "unknown",
+    "timestamp": "1778890201.389469",
+    "date": "2026-05-16T00:10:01.389Z"
+  },
+  {
+    "comment": "OK",
+    "mood": 3,
+    "recommendationLikelihood": 4,
+    "email": "",
+    "url": "https://www.familysearch.org/it/tree/person/memories/P788-PTT",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1778859186.227689",
+    "date": "2026-05-15T15:33:06.227Z"
+  },
+  {
+    "comment": "I'm not positive that the comment I just made was posted to you. So this post may be a duplicate.  However, where do I make a comment regarding this memory.  I don't want to create a story.  Just a comment.  The former iteration of Memories allow a \"box\" to make comments on the Edit page.  I do not want to have a comment in the title, or the duplication of the title just above it.  The font is just to small.",
+    "mood": 3,
+    "recommendationLikelihood": 8,
+    "email": "gloriaudy@gmail.com",
+    "url": "https://www.familysearch.org/en/tree/person/memories/LBY3-SSZ",
+    "platform": "Windows 10",
+    "browser": "Chrome 148.0.0.0",
+    "timestamp": "1778853437.734999",
+    "date": "2026-05-15T13:57:17.734Z"
+  }
+]
+;
+                displayDashboard(feedbackData);
+                initializeFilters();
+            } catch (error) {
+                document.getElementById('content').innerHTML = \`
+                    <div class="error">
+                        <strong>Error:</strong> \${error.message}
+                    </div>
+                \`;
+            }
+        }
+        */
+
+        function initializeFilters() {
+            const filtersContent = document.getElementById('filtersContent');
+            if (filtersContent) {
+                filtersContent.style.maxHeight = filtersContent.scrollHeight + 'px';
+            }
+        }
+
+        function toggleFilters() {
+            filtersExpanded = !filtersExpanded;
+            const filtersContent = document.getElementById('filtersContent');
+            const toggleBtn = document.querySelector('.toggle-filters');
+
+            if (filtersExpanded) {
+                filtersContent.style.maxHeight = filtersContent.scrollHeight + 'px';
+                filtersContent.classList.remove('collapsed');
+                toggleBtn.classList.remove('collapsed');
+            } else {
+                filtersContent.style.maxHeight = '0';
+                filtersContent.classList.add('collapsed');
+                toggleBtn.classList.add('collapsed');
+            }
+        }
+
+        function applyFilter(filter) {
+            currentFilter = filter;
+            updateFilterButtons();
+            displayDashboard(feedbackData);
+        }
+
+        function applySort(sort) {
+            currentSort = sort;
+            updateFilterButtons();
+            displayDashboard(feedbackData);
+        }
+
+        function updateFilterButtons() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activeFilterBtn = document.querySelector(`[data-filter="${currentFilter}"]`);
+            const activeSortBtn = document.querySelector(`[data-sort="${currentSort}"]`);
+
+            if (activeFilterBtn) activeFilterBtn.classList.add('active');
+            if (activeSortBtn) activeSortBtn.classList.add('active');
+        }
+
+        function filterAndSortData(data) {
+            let filtered = [...data];
+
+            if (currentFilter === 'positive') {
+                filtered = filtered.filter(item => item.mood >= 4);
+            } else if (currentFilter === 'neutral') {
+                filtered = filtered.filter(item => item.mood === 3);
+            } else if (currentFilter === 'negative') {
+                filtered = filtered.filter(item => item.mood <= 2);
+            } else if (currentFilter === 'promoters') {
+                filtered = filtered.filter(item => item.recommendationLikelihood >= 9);
+            } else if (currentFilter === 'passives') {
+                filtered = filtered.filter(item => item.recommendationLikelihood >= 7 && item.recommendationLikelihood <= 8);
+            } else if (currentFilter === 'detractors') {
+                filtered = filtered.filter(item => item.recommendationLikelihood <= 6);
+            }
+
+            if (currentSort === 'mood-high') {
+                filtered.sort((a, b) => b.mood - a.mood);
+            } else if (currentSort === 'mood-low') {
+                filtered.sort((a, b) => a.mood - b.mood);
+            } else if (currentSort === 'nps-high') {
+                filtered.sort((a, b) => b.recommendationLikelihood - a.recommendationLikelihood);
+            } else if (currentSort === 'nps-low') {
+                filtered.sort((a, b) => a.recommendationLikelihood - b.recommendationLikelihood);
+            }
+
+            return filtered;
+        }
+
+        function displayDashboard(feedbackData) {
+            const filteredData = filterAndSortData(feedbackData);
+
+            const avgMood = (feedbackData.reduce((sum, item) => sum + item.mood, 0) / feedbackData.length).toFixed(1);
+            const avgNPS = (feedbackData.reduce((sum, item) => sum + item.recommendationLikelihood, 0) / feedbackData.length).toFixed(1);
+
+            const themes = analyzeThemes(feedbackData);
+
+            const html = `
+                <div class="main-layout">
+                    <aside class="sidebar">
+                        <div class="sidebar-header">
+                            <h3>Filters</h3>
+                            <button class="toggle-filters" onclick="toggleFilters()" aria-label="Toggle filters">
+                                ▼
+                            </button>
+                        </div>
+
+                        <div class="filters-content" id="filtersContent">
+                            <div class="filter-section">
+                                <div class="filter-title">Sentiment</div>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All Feedback</button>
+                                    <button class="filter-btn" data-filter="positive" onclick="applyFilter('positive')">Positive (4-5)</button>
+                                    <button class="filter-btn" data-filter="neutral" onclick="applyFilter('neutral')">Neutral (3)</button>
+                                    <button class="filter-btn" data-filter="negative" onclick="applyFilter('negative')">Negative (1-2)</button>
+                                </div>
+                            </div>
+
+                            <div class="filter-section">
+                                <div class="filter-title">NPS Score</div>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn" data-filter="promoters" onclick="applyFilter('promoters')">Promoters (9-10)</button>
+                                    <button class="filter-btn" data-filter="passives" onclick="applyFilter('passives')">Passives (7-8)</button>
+                                    <button class="filter-btn" data-filter="detractors" onclick="applyFilter('detractors')">Detractors (0-6)</button>
+                                </div>
+                            </div>
+
+                            <div class="filter-section">
+                                <div class="filter-title">Sort By</div>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-sort="none" onclick="applySort('none')">Default Order</button>
+                                    <button class="filter-btn" data-sort="mood-high" onclick="applySort('mood-high')">Mood: High to Low</button>
+                                    <button class="filter-btn" data-sort="mood-low" onclick="applySort('mood-low')">Mood: Low to High</button>
+                                    <button class="filter-btn" data-sort="nps-high" onclick="applySort('nps-high')">NPS: High to Low</button>
+                                    <button class="filter-btn" data-sort="nps-low" onclick="applySort('nps-low')">NPS: Low to High</button>
+                                </div>
+                            </div>
+
+                            <div class="results-count">Showing ${filteredData.length} of ${feedbackData.length} items</div>
+                        </div>
+                    </aside>
+
+                    <div>
+                        <div class="dashboard">
+                    <div class="section">
+                        <h2 class="section-title">💬 User Feedback</h2>
+                        ${filteredData.length > 0 ? `
+                            <div class="feedback-grid">
+                                ${filteredData.map((item, index) => createFeedbackCard(item, index)).join('')}
+                            </div>
+                        ` : `
+                            <div style="text-align: center; padding: 40px; color: #6b7280;">
+                                <div style="font-size: 3em; margin-bottom: 15px;">🔍</div>
+                                <p>No feedback matches the current filters.</p>
+                                <button class="filter-btn" onclick="applyFilter('all')" style="margin-top: 15px;">Show All Feedback</button>
+                            </div>
+                        `}
+                    </div>
+
+                    <div>
+                        <div class="section" style="margin-bottom: 20px;">
+                            <h2 class="section-title">📊 Overview</h2>
+                            <div class="stats-overview">
+                                <div class="stat-box">
+                                    <div class="stat-value">${avgMood}/5</div>
+                                    <div class="stat-label">Avg Mood</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-value">${avgNPS}/10</div>
+                                    <div class="stat-label">Avg NPS</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <h2 class="section-title">🎯 Theme Analysis</h2>
+                            <div class="themes-container">
+                                ${themes.map(theme => createThemeCard(theme)).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function createFeedbackCard(item, index) {
+            const sentiment = getSentiment(item.mood);
+            const sentimentClass = sentiment.toLowerCase();
+
+            return `
+                <div class="feedback-card">
+                    <div class="feedback-header">
+                        <div style="flex: 1;">
+                            <div class="feedback-comment">"${item.comment}"</div>
+                            <span class="sentiment-badge sentiment-${sentimentClass}">${sentiment}</span>
+                        </div>
+                        <div class="feedback-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Mood</div>
+                                <div class="metric-value">${item.mood}/5</div>
+                                <div class="mood-indicator">
+                                    ${generateStars(item.mood)}
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">NPS</div>
+                                <div class="metric-value">${item.recommendationLikelihood}</div>
+                                <div class="nps-bar">
+                                    <div class="nps-fill" style="width: ${item.recommendationLikelihood * 10}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    ${item.url || item.platform ? `
+                        <div class="feedback-meta">
+                            ${item.platform ? `<div class="meta-item">💻 ${item.platform}</div>` : ''}
+                            ${item.browser ? `<div class="meta-item">🌐 ${item.browser.split(' ')[0]}</div>` : ''}
+                            ${item.url ? `<div class="meta-item">🔗 <a href="${item.url}" target="_blank" style="color: #0051C1;">View Page</a></div>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function generateStars(mood) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += `<span class="mood-star ${i <= mood ? 'filled' : 'empty'}">★</span>`;
+            }
+            return stars;
+        }
+
+        function getSentiment(mood) {
+            if (mood >= 4) return 'Positive';
+            if (mood >= 3) return 'Neutral';
+            return 'Negative';
+        }
+
+        function analyzeThemes(feedbackData) {
+            const themes = [];
+
+            const mobileIssues = feedbackData.filter(item =>
+                (item.comment.toLowerCase().includes('mobile') ||
+                item.comment.toLowerCase().includes('popup') ||
+                item.comment.toLowerCase().includes('keyboard') ||
+                item.comment.toLowerCase().includes('feedback tab')) &&
+                item.mood <= 3
+            );
+            if (mobileIssues.length > 0) {
+                themes.push({
+                    title: 'Mobile UX Issues',
+                    count: mobileIssues.length,
+                    description: 'Users experiencing problems with mobile interface, including popup overlays, keyboard covering content, and feedback tab placement.',
+                    recommendation: 'Redesign mobile UI to prevent overlays from blocking content. Implement smart keyboard handling that adjusts viewport. Move feedback tab to non-intrusive location.',
+                    icon: '📱'
+                });
+            }
+
+            const languageIssues = feedbackData.filter(item =>
+                item.comment.toLowerCase().includes('language') ||
+                item.comment.toLowerCase().includes('asian') ||
+                item.comment.toLowerCase().includes('can\'t read')
+            );
+            if (languageIssues.length > 0) {
+                themes.push({
+                    title: 'Language & Localization',
+                    count: languageIssues.length,
+                    description: 'Users encountering unexpected language changes or inability to switch languages.',
+                    recommendation: 'Add prominent language selector. Respect browser locale settings. Ensure consistent language experience across all pages.',
+                    icon: '🌐'
+                });
+            }
+
+            const positiveDiscovery = feedbackData.filter(item =>
+                (item.comment.toLowerCase().includes('love') ||
+                 item.comment.toLowerCase().includes('found') ||
+                 item.comment.toLowerCase().includes('great')) &&
+                item.mood >= 4
+            );
+            if (positiveDiscovery.length > 0) {
+                themes.push({
+                    title: 'Memory Discovery Success',
+                    count: positiveDiscovery.length,
+                    description: 'Users successfully discovering and connecting with family memories and ancestors.',
+                    recommendation: 'Amplify discovery features: implement "memories you might like" recommendations, notify users of newly added content from relatives, highlight successful connections.',
+                    icon: '✨'
+                });
+            }
+
+            const enthusiasticUsers = feedbackData.filter(item =>
+                (item.comment.match(/[!?]{5,}/g) || item.comment.length > 500) &&
+                item.mood >= 4
+            );
+            if (enthusiasticUsers.length > 0) {
+                themes.push({
+                    title: 'Highly Engaged Users',
+                    count: enthusiasticUsers.length,
+                    description: 'Users showing exceptional enthusiasm and engagement with the platform.',
+                    recommendation: 'Create ambassador program for power users. Offer advanced features or early access to beta features. Encourage content contribution.',
+                    icon: '⭐'
+                });
+            }
+
+            return themes.sort((a, b) => b.count - a.count);
+        }
+
+        function createThemeCard(theme) {
+            return `
+                <div class="theme-card">
+                    <div class="theme-title">
+                        <span>${theme.icon}</span>
+                        ${theme.title}
+                        <span class="theme-count">${theme.count} mention${theme.count > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="theme-description">${theme.description}</div>
+                    <div class="recommendation">
+                        <div class="recommendation-title">
+                            💡 Product Recommendation
+                        </div>
+                        <div class="recommendation-text">${theme.recommendation}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load feedback on page load
+        loadFeedback();
+    </script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal - Live Slack Feedback Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .controls {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .load-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .load-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            color: #666;
+            font-size: 0.95em;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feedback-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .feedback-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .feedback-item:hover {
+            border-color: #667eea;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 15px;
+        }
+
+        .feedback-metrics {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .metric-badge {
+            background: #f9fafb;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.75em;
+            display: block;
+        }
+
+        .metric-value {
+            color: #667eea;
+            font-size: 1.1em;
+            display: block;
+        }
+
+        .feedback-comment {
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .feedback-meta {
+            font-size: 0.85em;
+            color: #9ca3af;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .themes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .theme {
+            border-left: 4px solid #667eea;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .theme-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        .theme-description {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state .emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Signal</h1>
+            <p>Real-time Usabilla Feedback from Slack</p>
+        </header>
+
+        <div class="controls">
+            <button class="load-btn" onclick="loadSlackFeedback()" id="loadBtn">
+                📡 Load Feedback from Slack
+            </button>
+            <div class="status" id="status">
+                Ready to load feedback from channel C09NBPMCVK2
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>💬 Recent Feedback</h2>
+                <div id="feedbackList">
+                    <div class="empty-state">
+                        <div class="emoji">📊</div>
+                        <p>Click "Load Feedback from Slack" to fetch real Usabilla responses</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📈 Analytics</h2>
+                <div id="analytics">
+                    <div class="empty-state">
+                        <div class="emoji">📉</div>
+                        <p>Analytics will appear after loading feedback</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SLACK_CHANNEL_ID = 'C09NBPMCVK2';
+        let allFeedback = [];
+
+        async function loadSlackFeedback() {
+            const btn = document.getElementById('loadBtn');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            status.textContent = 'Loading feedback from Slack...';
+
+            document.getElementById('feedbackList').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Fetching messages from Slack channel...</p>
+                </div>
+            `;
+
+            try {
+                // In a real implementation, this would call your backend API
+                // For now, we'll show instructions for integration
+                const error = `
+                    <div class="error">
+                        <h3 style="margin-bottom: 10px;">🔧 Integration Required</h3>
+                        <p style="margin-bottom: 10px;">To connect to Slack, you need to set up a backend service that:</p>
+                        <ol style="margin-left: 20px; margin-bottom: 10px;">
+                            <li>Has access to the Slack MCP server</li>
+                            <li>Calls <code>mcp__slack__slack_get_channel_history</code> with channel ID: ${SLACK_CHANNEL_ID}</li>
+                            <li>Parses the GetFeedback bot messages</li>
+                            <li>Returns the structured data to this frontend</li>
+                        </ol>
+                        <p><strong>Alternative:</strong> Use the data-view.html prototype with the Claude Code integration to fetch data directly.</p>
+                    </div>
+                `;
+
+                document.getElementById('feedbackList').innerHTML = error;
+                status.textContent = 'Backend integration required';
+
+            } catch (error) {
+                document.getElementById('feedbackList').innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                status.textContent = 'Error loading feedback';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function parseFeedbackFromSlack(messages) {
+            const feedback = [];
+
+            for (const msg of messages) {
+                // Filter for GetFeedback bot messages
+                if (msg.bot_id === 'B08DMHJ8YHM' && msg.attachments && msg.attachments.length > 0) {
+                    const attachment = msg.attachments[0];
+                    const blocks = attachment.blocks || [];
+
+                    let mood = null;
+                    let nps = null;
+                    let comment = '';
+                    let email = '';
+                    let url = '';
+
+                    // Parse the fields
+                    for (const block of blocks) {
+                        if (block.fields) {
+                            for (let i = 0; i < block.fields.length; i += 2) {
+                                const label = block.fields[i].text;
+                                const value = block.fields[i + 1]?.text;
+
+                                if (label.includes('Mood')) {
+                                    mood = parseInt(value.match(/(\d+)/)?.[1] || '0');
+                                } else if (label.includes('Nps')) {
+                                    nps = parseInt(value.match(/(\d+)/)?.[1] || '0');
+                                } else if (label.includes('Comment')) {
+                                    comment = value.replace(/<[^>]+>/g, '').trim();
+                                } else if (label.includes('Email')) {
+                                    email = value.match(/mailto:([^|]+)/)?.[1] || '';
+                                } else if (label.includes('Url')) {
+                                    url = value.match(/<([^>]+)>/)?.[1] || '';
+                                }
+                            }
+                        }
+                    }
+
+                    if (mood && nps && comment) {
+                        feedback.push({
+                            comment,
+                            mood,
+                            recommendationLikelihood: nps,
+                            email,
+                            url,
+                            timestamp: msg.ts
+                        });
+                    }
+                }
+            }
+
+            return feedback;
+        }
+
+        function displayFeedback(feedback) {
+            if (feedback.length === 0) {
+                document.getElementById('feedbackList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🤷</div>
+                        <p>No feedback found in the channel</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = feedback.map(item => `
+                <div class="feedback-item">
+                    <div class="feedback-header">
+                        <div style="flex: 1;">
+                            <div class="feedback-comment">"${item.comment}"</div>
+                        </div>
+                        <div class="feedback-metrics">
+                            <div class="metric-badge">
+                                <span class="metric-label">Mood</span>
+                                <span class="metric-value">${item.mood}/5</span>
+                            </div>
+                            <div class="metric-badge">
+                                <span class="metric-label">NPS</span>
+                                <span class="metric-value">${item.recommendationLikelihood}/10</span>
+                            </div>
+                        </div>
+                    </div>
+                    ${item.url ? `<div class="feedback-meta">📍 ${item.url}</div>` : ''}
+                </div>
+            `).join('');
+
+            document.getElementById('feedbackList').innerHTML = `
+                <div class="feedback-list">${html}</div>
+            `;
+        }
+
+        function displayAnalytics(feedback) {
+            if (feedback.length === 0) return;
+
+            const avgMood = (feedback.reduce((sum, item) => sum + item.mood, 0) / feedback.length).toFixed(1);
+            const avgNPS = (feedback.reduce((sum, item) => sum + item.recommendationLikelihood, 0) / feedback.length).toFixed(1);
+
+            const themes = analyzeThemes(feedback);
+
+            const html = `
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">${avgMood}/5</div>
+                        <div class="stat-label">Avg Mood</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${avgNPS}/10</div>
+                        <div class="stat-label">Avg NPS</div>
+                    </div>
+                </div>
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 1.1em;">🎯 Key Themes</h3>
+                <div class="themes-container">
+                    ${themes.map(theme => `
+                        <div class="theme">
+                            <div class="theme-title">
+                                ${theme.title}
+                                <span class="theme-count">${theme.count}</span>
+                            </div>
+                            <div class="theme-description">${theme.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('analytics').innerHTML = html;
+        }
+
+        function analyzeThemes(feedback) {
+            // Simple keyword-based theme detection
+            const themes = [];
+
+            const uploadIssues = feedback.filter(f =>
+                f.comment.toLowerCase().includes('upload') ||
+                f.comment.toLowerCase().includes('slow')
+            );
+            if (uploadIssues.length > 0) {
+                themes.push({
+                    title: 'Upload Performance',
+                    count: uploadIssues.length,
+                    description: 'Users experiencing issues with photo uploads and performance'
+                });
+            }
+
+            const positive = feedback.filter(f => f.mood >= 4);
+            if (positive.length > feedback.length * 0.3) {
+                themes.push({
+                    title: 'Positive Experiences',
+                    count: positive.length,
+                    description: 'Users expressing satisfaction with the product'
+                });
+            }
+
+            const detractors = feedback.filter(f => f.recommendationLikelihood <= 6);
+            if (detractors.length > 0) {
+                themes.push({
+                    title: 'At-Risk Users',
+                    count: detractors.length,
+                    description: 'Users unlikely to recommend - need immediate attention'
+                });
+            }
+
+            return themes;
+        }
+    </script>
+</body>
+</html>
